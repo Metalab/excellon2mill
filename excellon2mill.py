@@ -21,6 +21,13 @@ parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'), default=s
 
 args = parser.parse_args()
 
+def dot(x, y):
+	assert len(x) == len(y)
+	return sum(itertools.starmap(operator.mul, itertools.izip(x, y)))
+
+def matmult(m, v):
+	return [dot(row, v) for row in m]
+
 drill_diameter = args.diameter
 tiefe_max = args.thickness
 a_e = (args.ae/100.0) * drill_diameter
@@ -60,11 +67,7 @@ transform = [[1,0,0],
 if args.p1 != None and args.p2 != None:
 	p1 = [holes[0]['x'], holes[0]['y']]
 	p2 = [holes[-1]['x'], holes[-1]['y']]
-	
-	# translation
-	transform[0][2] = args.p1[0] - p1[0]
-	transform[1][2] = args.p1[1] - p1[1]
-	
+		
 	# rotation
 	vlen = math.sqrt(math.pow(p2[0] - p1[0], 2) + math.pow(p2[1] - p1[1], 2))
 	argslen = math.sqrt(math.pow(args.p2[0] - args.p1[0], 2) + math.pow(args.p2[1] - args.p1[1], 2))
@@ -79,6 +82,12 @@ if args.p1 != None and args.p2 != None:
 	transform[1][1] = cosalpha
 	transform[1][0] = math.sqrt(1-cosalpha) * math.sqrt(1+cosalpha)
 	transform[0][1] = -transform[1][0]
+	
+	# translation
+	delta = matmult(transform, [args.p1[0] - p1[0], args.p1[1] - p1[1], 1])
+	transform[0][2] = delta[0]
+	transform[1][2] = delta[1]
+
 
 args.outfile.write('''(Drill File)
 
@@ -102,9 +111,6 @@ G0 Z20
 
 ''')
 
-def dot(x, y):
-	assert len(x) == len(y)
-	return sum(itertools.starmap(operator.mul, itertools.izip(x, y)))
 for hole in holes:
 	hole['orig_x'] = hole['x']
 	hole['orig_y'] = hole['y']
@@ -112,8 +118,6 @@ for hole in holes:
 	hole['x'] = pos[0]
 	hole['y'] = pos[1]
 
-def matmult(m, v):
-	return [dot(row, v) for row in m]
 # the arrangement might have changed due to the rotation, sort again
 holes.sort(key=lambda h: h['y'])
 holes.sort(key=lambda h: h['x'])
