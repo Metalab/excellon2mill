@@ -24,32 +24,28 @@ tiefe_max = args.thickness
 a_e = (args.ae/100.0) * drill_diameter
 
 tools = []
-state = 0
 holes = []
 
 for line in args.infile:
 	line = line.strip()
-	if line[0] == '%':
-		state += 1
-	if state == 1:
-		if line[0] == 'T':
-			index = int(line[1:3])
+	if line[0] == 'T':
+		index = int(line[1:3])
+		if line[3:4] == 'C':
 			while len(tools) < index:
 				tools.append(0)
 			index -= 1
 			tools[index] = float(line[4:]) * 25.4
-	elif state == 2:
-		if line[0] == 'T':
-			current_tool_size = tools[int(line[1:3])-1]
-		elif line[0] == 'X':
-			y_idx = line.find('Y')
-			x_pos = float(line[1:y_idx]) * 25.4 / 10000
-			y_pos = float(line[y_idx+1:]) * 25.4 / 10000
-			holes.append({
-				'x': x_pos,
-				'y': y_pos,
-				'diameter': current_tool_size
-			})
+		else:
+			current_tool_size = tools[index-1]
+	elif line[0] == 'X':
+		y_idx = line.find('Y')
+		x_pos = float(line[1:y_idx]) * 25.4 / 10000
+		y_pos = float(line[y_idx+1:]) * 25.4 / 10000
+		holes.append({
+			'x': x_pos,
+			'y': y_pos,
+			'diameter': current_tool_size
+		})
 
 holes.sort(key=lambda h: h['y'])
 holes.sort(key=lambda h: h['x'])
