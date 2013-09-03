@@ -44,6 +44,7 @@ for line in args.infile:
 		x_pos = float(line[1:y_idx]) * 25.4 / 10000
 		y_pos = float(line[y_idx+1:]) * 25.4 / 10000
 		holes.append({
+			'index': len(holes),
 			'x': x_pos,
 			'y': y_pos,
 			'diameter': current_tool_size
@@ -104,22 +105,28 @@ G0 Z20
 def dot(x, y):
 	assert len(x) == len(y)
 	return sum(itertools.starmap(operator.mul, itertools.izip(x, y)))
+for hole in holes:
+	hole['orig_x'] = hole['x']
+	hole['orig_y'] = hole['y']
+	pos = matmult(transform, [hole['x'], hole['y'], 1])
+	hole['x'] = pos[0]
+	hole['y'] = pos[1]
 
 def matmult(m, v):
 	return [dot(row, v) for row in m]
+# the arrangement might have changed due to the rotation, sort again
+holes.sort(key=lambda h: h['y'])
+holes.sort(key=lambda h: h['x'])
 
 for hole in holes:
-	pos = [hole['x'], hole['y'], 1]
-	args.outfile.write('\n(Hole: Pos = %.2f, %.2f; Diameter = %.2f)\n' % (pos[0], pos[1], hole['diameter']))
-	
-	pos = matmult(transform, pos)
+	args.outfile.write('\n(Hole %d: Pos = %.2f, %.2f; Diameter = %.2f)\n' % (hole['index']+1, hole['orig_x'], hole['orig_y'], hole['diameter']))
 	
 	args.outfile.write('''G0 X%.4f Y%.4f
 G0 Z1
 G1 Z0 F60
 G83 R0.5 Q0.25 Z%.4f (%.2f ist maximale Eintauchtiefe)
 G1 Z0
-''' % (pos[0], pos[1], -tiefe_max, tiefe_max))
+''' % (hole['x'], hole['y'], -tiefe_max, tiefe_max))
 	# can we even start helix drilling?
 	if hole['diameter'] - drill_diameter >= a_e/3:
 		args.outfile.write('G91\n')
@@ -132,7 +139,7 @@ G2 Z%.4f I0 J%.4f P%d
 ''' % (a_e_prime, -tiefe_max, -(i+1)*a_e_prime, math.ceil(tiefe_max/drill_diameter)*2))
 			if i != alpha_prime-1:
 				args.outfile.write('G1 Y%.4f\nG0 Z%.4f\nG1 Y%.4f\n' % (-a_e_prime, tiefe_max, a_e_prime))
-		args.outfile.write('G90\nG1 X%.4f Y%.4f\n' % (pos[0], pos[1]))
+		args.outfile.write('G90\nG1 X%.4f Y%.4f\n' % (hole['x'], hole['y']))
 
 	args.outfile.write('G0 Z5\nF1000\n')
 
