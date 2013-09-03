@@ -57,7 +57,10 @@ for line in fileinput.input():
 				'y': y_pos,
 				'diameter': current_tool_size
 			})
-	
+
+holes.sort(key=lambda h: h['y'])
+holes.sort(key=lambda h: h['x'])
+
 for hole in holes:
 	sys.stdout.write('\n(Hole: Pos = %.2f, %.2f; Diameter = %.2f)\n' % (hole['x'], hole['y'], hole['diameter']))
 	sys.stdout.write('''G0 X%.4f Y%.4f
