@@ -67,7 +67,7 @@ G83 R0.5 Q0.25 Z%.4f (%.2f ist maximale Eintauchtiefe)
 G1 Z0
 ''' % (hole['x'], hole['y'], -tiefe_max, tiefe_max))
 	# can we even start helix drilling?
-	if current_tool_size - drill_diameter >= a_e/3:
+	if hole['diameter'] - drill_diameter >= a_e/3:
 		sys.stdout.write('G91\n')
 		delta = (hole['diameter'] - drill_diameter)/2
 		alpha_prime = int(math.ceil(delta/a_e))
