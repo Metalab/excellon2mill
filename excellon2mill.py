@@ -16,6 +16,8 @@ parser.add_argument('--thickness', metavar='num', type=float, nargs=1, default=1
                    help='The PCB thickness (default 1.75)')
 parser.add_argument('--ae', metavar='num', type=float, nargs=1, default=30.0,
                    help='The maximum amount of material taken in one movement (in %% of the drill diameter, default 30)')
+parser.add_argument('--calibrate', action='store_true',
+                   help='Whether to just output the first and last drill hole index and position for calibration using --p1 and --p2')
 parser.add_argument('infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
 parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
 
@@ -59,6 +61,11 @@ for line in args.infile:
 
 holes.sort(key=lambda h: h['y'])
 holes.sort(key=lambda h: h['x'])
+
+if args.calibrate:
+	sys.stdout.write("First drill hole: index %d, position %.2f, %.2f\n" % (holes[0]['index']+1, holes[0]['x'], holes[0]['y']))
+	sys.stdout.write(" Last drill hole: index %d, position %.2f, %.2f\n" % (holes[-1]['index']+1, holes[-1]['x'], holes[-1]['y']))
+	exit(0)
 
 transform = [[1,0,0],
              [0,1,0],
