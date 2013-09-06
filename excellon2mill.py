@@ -80,7 +80,7 @@ if args.p1 != None and args.p2 != None:
 	argslen = math.sqrt(math.pow(args.p2[0] - args.p1[0], 2) + math.pow(args.p2[1] - args.p1[1], 2))
 	
 	if abs(vlen - argslen) > 0.1:
-		sys.stderr.write("The distance between the two points is not correct! Have you scaled the PCB?\n")
+		sys.stderr.write("The distance between the two points is not correct (should be %.2f, you measured %.2f)! Have you scaled the PCB?\n" % (vlen, argslen))
 		sys.exit(1)
 	
 	cosalpha = ((p2[0] - p1[0]) / vlen) * (args.p2[0] - args.p1[0]) / argslen + \
