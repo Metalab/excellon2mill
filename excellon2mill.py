@@ -12,7 +12,7 @@ parser.add_argument('--p2', metavar='num', type=float, nargs=2,
                    help='The position of the last drill hole')
 parser.add_argument('--diameter', metavar='num', type=float, nargs=1, default=0.8,
                    help='The drill diameter (default 0.8)')
-parser.add_argument('--thickness', metavar='num', type=float, nargs=1, default=1.75,
+parser.add_argument('--thickness', metavar='num', type=float, nargs=1, default=[1.75],
                    help='The PCB thickness (default 1.75)')
 parser.add_argument('--ae', metavar='num', type=float, nargs=1, default=30.0,
                    help='The maximum amount of material taken in one movement (in %% of the drill diameter, default 30)')
@@ -31,7 +31,7 @@ def matmult(m, v):
 	return [dot(row, v) for row in m]
 
 drill_diameter = args.diameter
-tiefe_max = args.thickness
+tiefe_max = args.thickness[0]
 a_e = (args.ae/100.0) * drill_diameter
 
 tools = []
