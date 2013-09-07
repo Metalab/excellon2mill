@@ -69,14 +69,22 @@ if args.calibrate:
 	sys.stdout.write(" Last drill hole: index %d, position %.2f, %.2f\n" % (holes[-1]['index']+1, holes[-1]['x'], holes[-1]['y']))
 	exit(0)
 
-transform = [[1,0,0],
-             [0,1,0],
-             [0,0,1]]
+transform = [[1.0,0.0,0.0],
+             [0.0,1.0,0.0],
+             [0.0,0.0,1.0]]
 
 if args.p1 != None and args.p2 != None:
 	p1 = [holes[0]['x'], holes[0]['y']]
 	p2 = [holes[-1]['x'], holes[-1]['y']]
-		
+	a1 = args.p1
+	a2 = args.p2
+	origp1 = p1
+	
+	p1 = [a-b for a,b in zip(p1,origp1)]
+	p2 = [a-b for a,b in zip(p2,origp1)]
+	a1 = [a-b for a,b in zip(a1,origp1)]
+	a2 = [a-b for a,b in zip(a2,origp1)]
+
 	# rotation
 	vlen = math.sqrt(math.pow(p2[0] - p1[0], 2) + math.pow(p2[1] - p1[1], 2))
 	argslen = math.sqrt(math.pow(args.p2[0] - args.p1[0], 2) + math.pow(args.p2[1] - args.p1[1], 2))
@@ -89,13 +97,13 @@ if args.p1 != None and args.p2 != None:
 	           ((p2[1] - p1[1]) / vlen) * (args.p2[1] - args.p1[1]) / argslen
 	transform[0][0] = cosalpha
 	transform[1][1] = cosalpha
-	transform[1][0] = math.sqrt(1-cosalpha) * math.sqrt(1+cosalpha)
+	transform[1][0] = math.sqrt(1.0-cosalpha*cosalpha)
 	transform[0][1] = -transform[1][0]
 	
 	# translation
-	delta = matmult(transform, [args.p1[0] - p1[0], args.p1[1] - p1[1], 1])
-	transform[0][2] = delta[0]
-	transform[1][2] = delta[1]
+	delta = matmult(transform, [origp1[0], origp1[1], 1])
+	transform[0][2] = -delta[0] + args.p1[0]
+	transform[1][2] = -delta[1] + args.p1[1]
 
 
 args.outfile.write('''(Drill File)
