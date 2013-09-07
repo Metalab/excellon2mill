@@ -18,6 +18,8 @@ parser.add_argument('--ae', metavar='num', type=float, nargs=1, default=30.0,
                    help='The maximum amount of material taken in one movement (in %% of the drill diameter, default 30)')
 parser.add_argument('--calibrate', action='store_true',
                    help='Whether to just output the first and last drill hole index and position for calibration using --p1 and --p2')
+parser.add_argument('--boardsize', metavar='num', type=float, nargs=4,
+                   help='Two board edge coordinates (supply lower left and upper right in the form x1 y1 x2 y2, in the coordinate space of the PCB generator)')
 parser.add_argument('infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
 parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
 
@@ -153,6 +155,25 @@ G2 Z%.4f I0 J%.4f P%d
 		args.outfile.write('G90\nG1 X%.4f Y%.4f\n' % (hole['x'], hole['y']))
 
 	args.outfile.write('G0 Z5\nF1000\n')
+
+if args.boardsize != None:
+	args.outfile.write('\n(Milling Board Dimensions)\n')
+	p1 = matmult(transform, [args.boardsize[0], args.boardsize[1], 1])
+	p2 = matmult(transform, [args.boardsize[2], args.boardsize[1], 1])
+	p3 = matmult(transform, [args.boardsize[2], args.boardsize[3], 1])
+	p4 = matmult(transform, [args.boardsize[0], args.boardsize[3], 1])
+	
+	args.outfile.write('G0 X%.4f Y%.4f Z5\n' % (p1[0], p1[1]))
+	args.outfile.write('G0 Z1\nF60\n')
+	count = int(math.ceil(tiefe_max / a_e))
+	a_e_prime = tiefe_max / count
+	for i in range(0,count):
+		args.outfile.write('G1 Z%.4f F60\nF1000\n' % (-i*a_e_prime,))
+		args.outfile.write('G1 X%.4f Y%.4f\n' % (p2[0], p2[1]))
+		args.outfile.write('G1 X%.4f Y%.4f\n' % (p3[0], p3[1],))
+		args.outfile.write('G1 X%.4f Y%.4f\n' % (p4[0], p4[1],))
+		args.outfile.write('G1 X%.4f Y%.4f\n' % (p1[0], p1[1],))
+	args.outfile.write('G1 Z0\n') # don't move along the board with G0
 
 args.outfile.write('''
 G0 Z20 (Z-Wert soll Fraeser deutlich ueber das Werkstueck bringen)
