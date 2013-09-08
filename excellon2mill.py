@@ -166,10 +166,10 @@ G2 Z%.4f I0 J%.4f P%d
 
 if args.boardsize != None:
 	args.outfile.write('\n(Milling Board Dimensions)\n')
-	p1 = matmult(transform, [args.boardsize[0], args.boardsize[1], 1])
-	p2 = matmult(transform, [args.boardsize[2], args.boardsize[1], 1])
-	p3 = matmult(transform, [args.boardsize[2], args.boardsize[3], 1])
-	p4 = matmult(transform, [args.boardsize[0], args.boardsize[3], 1])
+	p1 = matmult(transform, [args.boardsize[0] - drill_diameter/2.0, args.boardsize[1] - drill_diameter/2.0, 1])
+	p2 = matmult(transform, [args.boardsize[2] + drill_diameter/2.0, args.boardsize[1] - drill_diameter/2.0, 1])
+	p3 = matmult(transform, [args.boardsize[2] + drill_diameter/2.0, args.boardsize[3] + drill_diameter/2.0, 1])
+	p4 = matmult(transform, [args.boardsize[0] - drill_diameter/2.0, args.boardsize[3] + drill_diameter/2.0, 1])
 	
 	args.outfile.write('G0 X%.4f Y%.4f Z5\n' % (p1[0], p1[1]))
 	args.outfile.write('G0 Z1\nF60\n')
